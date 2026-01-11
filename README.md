@@ -30,6 +30,9 @@ Features that differentiate this fork from the original project:
 - **Easier tasks config**
   - Default passthrough of any unprocessed image/video instead of having to add an empty task and list all extensions to allow
   - No need for a command to remove the original file, it's still needed if processing produces a bigger file size. IUO will delete it
+- **Debloated Docker image**
+  - Significantly smaller Docker image with only the essentials
+  - Latest AVIF/HEIF/JXL/ImageMagick versions compiled from sources with full image format conversion support
 
 ## 🐋 Usage via Docker compose
 Edit your Immich Docker Compose file:
