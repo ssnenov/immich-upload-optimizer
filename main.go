@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -39,6 +40,8 @@ var checksumsFile string
 var downloadJpgFromJxl bool
 var downloadJpgFromAvif bool
 
+var readTimeoutMinutes uint
+
 var config *Config
 
 func init() {
@@ -51,6 +54,7 @@ func init() {
 	viper.BindEnv("download_jpg_from_avif")
 	viper.BindEnv("max_image_jobs")
 	viper.BindEnv("max_video_jobs")
+	viper.BindEnv("read_timeout_minutes")
 
 	viper.SetDefault("upstream", "")
 	viper.SetDefault("listen", ":2284")
@@ -60,6 +64,7 @@ func init() {
 	viper.SetDefault("download_jpg_from_avif", false)
 	viper.SetDefault("max_image_jobs", 5)
 	viper.SetDefault("max_video_jobs", 1)
+	viper.SetDefault("read_timeout_minutes", 10)
 
 	flag.BoolVar(&showVersion, "version", false, "Show the current version")
 	flag.StringVar(&upstreamURL, "upstream", viper.GetString("upstream"), "Upstream URL. Example: http://immich-server:2283")
@@ -70,6 +75,7 @@ func init() {
 	flag.BoolVar(&downloadJpgFromAvif, "download_jpg_from_avif", viper.GetBool("download_jpg_from_avif"), "Converts AVIF images to JPG on download for wider compatibility")
 	flag.UintVar(&maxImageJobs, "max_image_jobs", viper.GetUint("max_image_jobs"), "Max number of image jobs running concurrently")
 	flag.UintVar(&maxVideoJobs, "max_video_jobs", viper.GetUint("max_video_jobs"), "Max number of video jobs running concurrently")
+	flag.UintVar(&readTimeoutMinutes, "read_timeout_minutes", viper.GetUint("read_timeout_minutes"), "HTTP server read/write timeout in minutes (increase for large files on slow connections)")
 	flag.Parse()
 
 	if showVersion {
@@ -112,7 +118,13 @@ func main() {
 		proxy.Transport = http.DefaultTransport
 		proxy.Transport.(*http.Transport).Proxy = http.ProxyURL(proxyUrl)
 	}
-	server := &http.Server{Addr: listenAddr, Handler: http.HandlerFunc(handleRequest)}
+	server := &http.Server{
+		Addr:         listenAddr,
+		Handler:      http.HandlerFunc(handleRequest),
+		ReadTimeout:  time.Duration(readTimeoutMinutes) * time.Minute,
+		WriteTimeout: time.Duration(readTimeoutMinutes) * time.Minute,
+		IdleTimeout:  2 * time.Minute,
+	}
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Error starting immich-upload-optimizer: %v", err)
 	}

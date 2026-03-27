@@ -53,6 +53,7 @@ services:
       - TMPDIR=/tempfs # Writes uploaded files in RAM to improve disk lifespan (Remove if running low on RAM)
       #- IUO_DOWNLOAD_JPG_FROM_JXL=true # Uncomment to enable JXL to JPG conversion
       #- IUO_DOWNLOAD_JPG_FROM_AVIF=true # Uncomment to enable AVIF to JPG conversion
+      #- IUO_READ_TIMEOUT_MINUTES="15" # Uncoumment to change the read/write timeout of the HTTP connection (default: 10)
     volumes:
       #- /path/to/your/host/dir:/IUO # Keep the checksums and tasks files between updates by defining a volume
     restart: unless-stopped
@@ -84,6 +85,7 @@ All flags are also available as environment variables using the prefix `IUO_` fo
 - `-download_jpg_from_avif`: Converts AVIF images to JPG on download for compatibility (default: `false`)
 - `-max_image_jobs`: Max number of image jobs running concurrently (default: `5`)
 - `-max_video_jobs`: Max number of video jobs running concurrently (default: `1`)
+- `-max_video_jobs`: Read/Write timeout of HTTP the connection (default: 10) (default: `1`)
 
 ## 📸 Images
 **[AVIF](https://aomediacodec.github.io/av1-avif/)** is used by default, saving **~80%** space while maintaining the same perceived quality (lossy conversion)
